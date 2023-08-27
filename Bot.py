@@ -29,37 +29,38 @@ filter_admin = filters.create(filter_admin)
 @client.on_message(filters=filter_admin)
 async def all_message(client:Client, message: Message):
     """Отлавливем сообщения от админа и возвращаем количество зареганых людей"""
-    cl= get_today_client()
+    cl= get_today_clients_count()
     await client.send_message("me",str(cl))
 
 photo = InputMediaPhoto("./photo.jpg")
 
 @client.on_message()
-async def all_message(client:Client,message: Message):
+async def admin_message(client:Client, message: Message):
     """Отлавливем все входящие сообщения и делаем воронку"""
-    if check_client(message.chat.id) == True:
+    if create_client_if_not_exists(message.chat.id) == True:
 
-        time.sleep(minutes*10)
-        await client.send_chat_action(message.chat.id,ChatAction.TYPING)  # Имитируем что пишем от руки
-        time.sleep(5)
-        await client.send_message(message.chat.id,"Добрый день!")
+        await send_message_with_delay(message.chat.id,"Добрый день!",10)
         logger.info("Сообщение доставлено:Добрый день!")
-        time.sleep(minutes*90)
-        await client.send_chat_action(message.chat.id,ChatAction.TYPING)  # Имитируем что пишем от руки
-        time.sleep(5)
-        await client.send_message(message.chat.id, "Подготовила для вас материал")
+
+        await send_message_with_delay(message.chat.id, "Подготовила для вас материал",90)
         logger.info("Сообщение доставлено:Подготовила для вас материал")
+
         await client.send_photo(message.chat.id, "./photo.jpg")
         logger.info("Сообщение доставлено:Фото")
         time.sleep(minutes*120)
+
         if client.search_messages(message.id,"TRIGGER"):
             logger.info("Найден триггер!")
-        else:
-            await client.send_chat_action(message.chat.id, ChatAction.TYPING)  # Имитируем что пишем от руки
-            time.sleep(5)
-            await client.send_message(message.chat.id, "Скоро вернусь с новым материалом!")
+            return
+        await send_message_with_delay(message.chat.id, "Скоро вернусь с новым материалом!", 0)
+
     else:
         await client.send_message(message.chat.id, "Вы уже есть в базе")
 
 
 
+async def send_message_with_delay(massage_cat_id,send_mes,time_wait):
+    time.sleep(minutes * time_wait)
+    await client.send_chat_action(massage_cat_id, ChatAction.TYPING)  # Имитируем что пишем от руки
+    time.sleep(5)
+    await client.send_message(massage_cat_id, send_mes)

@@ -4,13 +4,12 @@ from models import clients
 
 
 
-def check_client(chat_id):
+def create_client_if_not_exists(chat_id):
     """Проверяем наличие юзера в базе данных"""
     session = Session()
-    for user in session.query(clients).filter(clients.chat_id==chat_id):
-        if user:
-            session.close()
-            return False
+    if bool(session.query(clients).filter_by(chat_id=chat_id).first()):
+        session.close()
+        return False
     session.close()
     create_clients(chat_id)
     return True
@@ -23,9 +22,9 @@ def create_clients(chat_id):
     session.add(new_с)
     session.commit()
     session.close()
-    print("Я добавил новичка!")
 
-def get_today_client():
+
+def get_today_clients_count():
     """Все клиенты за сегодня"""
     date_list=0
     session = Session()
@@ -35,4 +34,4 @@ def get_today_client():
     session.close()
 
 
-
+create_client_if_not_exists("Вася")
